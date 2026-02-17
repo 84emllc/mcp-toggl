@@ -110,14 +110,14 @@ export class CacheManager {
   }
   
   // Project methods
-  async getProject(id: number): Promise<Project | null> {
+  async getProject(id: number, workspaceId?: number): Promise<Project | null> {
     const cached = this.getCached(this.projects, id);
     if (cached) return cached;
-    
+
     if (!this.api) return null;
-    
+
     try {
-      const project = await this.api.getProject(id);
+      const project = await this.api.getProject(id, workspaceId);
       if (project) {
         this.setCached(this.projects, id, project);
       }
@@ -307,12 +307,12 @@ export class CacheManager {
     
     // Collect unique IDs to batch fetch if needed
     const workspaceIds = new Set<number>();
-    const projectIds = new Set<number>();
+    const projectEntries = new Map<number, number>(); // project_id -> workspace_id
     const taskIds = new Set<{wid: number, pid: number, tid: number}>();
-    
+
     entries.forEach(entry => {
       workspaceIds.add(entry.workspace_id);
-      if (entry.project_id) projectIds.add(entry.project_id);
+      if (entry.project_id) projectEntries.set(entry.project_id, entry.workspace_id);
       if (entry.task_id && entry.project_id) {
         taskIds.add({
           wid: entry.workspace_id,
@@ -321,12 +321,14 @@ export class CacheManager {
         });
       }
     });
-    
-    // Pre-fetch missing entities
-    const projectsToFetch = Array.from(projectIds).filter(id => !this.projects.has(id));
+
+    // Pre-fetch missing projects sequentially to avoid rate limits
+    const projectsToFetch = Array.from(projectEntries.entries()).filter(([id]) => !this.projects.has(id));
     if (projectsToFetch.length > 0 && this.api) {
       console.error(`Fetching ${projectsToFetch.length} missing projects...`);
-      await Promise.all(projectsToFetch.map(id => this.getProject(id)));
+      for (const [id, wid] of projectsToFetch) {
+        await this.getProject(id, wid);
+      }
     }
     
     // Now hydrate each entry
@@ -339,7 +341,7 @@ export class CacheManager {
       
       // Add project name and client info
       if (entry.project_id) {
-        const project = await this.getProject(entry.project_id);
+        const project = await this.getProject(entry.project_id, entry.workspace_id);
         hydEntry.project_name = project?.name || `Project ${entry.project_id}`;
         
         if (project?.client_id) {
