@@ -1,47 +1,107 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json",
-  "name": "io.github.verygoodplugins/mcp-toggl",
-  "description": "MCP server for Toggl Track time tracking integration with intelligent caching and reporting tools.",
-  "version": "1.0.0",
+  "name": "io.github.84emllc/mcp-toggl",
+  "description": "MCP server for Toggl Track time tracking integration with intelligent caching, reporting, and project/client management tools. Forked from verygoodplugins/mcp-toggl.",
+  "version": "1.1.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/verygoodplugins/mcp-toggl"
+    "url": "https://github.com/84emllc/mcp-toggl"
   },
   "packages": [
     {
       "registry_type": "npm",
       "identifier": "@verygoodplugins/mcp-toggl",
-      "version": "1.0.0"
+      "version": "1.1.0"
     }
   ],
   "tools": [
     {
-      "name": "toggl_get_current",
-      "description": "Get currently running time entry"
+      "name": "toggl_check_auth",
+      "description": "Verify Toggl API connectivity and authentication is valid"
     },
     {
-      "name": "toggl_start",
-      "description": "Start a new time entry"
+      "name": "toggl_get_time_entries",
+      "description": "Get time entries with optional date range filters"
     },
     {
-      "name": "toggl_stop",
-      "description": "Stop the current time entry"
+      "name": "toggl_get_current_entry",
+      "description": "Get the currently running time entry, if any"
     },
     {
-      "name": "toggl_get_entries",
-      "description": "Get time entries for a date range"
+      "name": "toggl_start_timer",
+      "description": "Start a new time entry timer"
     },
     {
-      "name": "toggl_get_projects",
-      "description": "List all projects"
+      "name": "toggl_create_entry",
+      "description": "Create a completed time entry with specific start and stop times"
     },
     {
-      "name": "toggl_report",
-      "description": "Generate time reports"
+      "name": "toggl_stop_timer",
+      "description": "Stop the currently running timer"
+    },
+    {
+      "name": "toggl_daily_report",
+      "description": "Generate a daily report with hours by project and workspace"
+    },
+    {
+      "name": "toggl_weekly_report",
+      "description": "Generate a weekly report with daily breakdown and project summaries"
+    },
+    {
+      "name": "toggl_project_summary",
+      "description": "Get total hours per project for a date range"
+    },
+    {
+      "name": "toggl_workspace_summary",
+      "description": "Get total hours per workspace for a date range"
+    },
+    {
+      "name": "toggl_list_workspaces",
+      "description": "List all available workspaces"
+    },
+    {
+      "name": "toggl_list_projects",
+      "description": "List projects for a workspace"
+    },
+    {
+      "name": "toggl_list_clients",
+      "description": "List clients for a workspace"
+    },
+    {
+      "name": "toggl_create_client",
+      "description": "Create a new client in a workspace"
+    },
+    {
+      "name": "toggl_create_project",
+      "description": "Create a new project in a workspace"
+    },
+    {
+      "name": "toggl_update_project",
+      "description": "Update an existing project (rename, change client, archive, etc.)"
+    },
+    {
+      "name": "toggl_update_time_entry",
+      "description": "Update an existing time entry (change project, description, tags, times, etc.)"
+    },
+    {
+      "name": "toggl_delete_time_entry",
+      "description": "Delete a time entry"
+    },
+    {
+      "name": "toggl_warm_cache",
+      "description": "Pre-fetch and cache workspace, project, and client data"
+    },
+    {
+      "name": "toggl_cache_stats",
+      "description": "Get cache statistics and performance metrics"
+    },
+    {
+      "name": "toggl_clear_cache",
+      "description": "Clear all cached data"
     }
   ],
   "author": {
-    "name": "Very Good Plugins",
-    "url": "https://verygoodplugins.com/?utm_source=mcp-registry"
+    "name": "84EM",
+    "url": "https://84em.com"
   }
 }

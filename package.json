@@ -1,10 +1,10 @@
 {
   "name": "@verygoodplugins/mcp-toggl",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "MCP server for Toggl Track integration with time tracking and reporting",
   "main": "dist/index.js",
   "type": "module",
-  "mcpName": "io.github.verygoodplugins/mcp-toggl",
+  "mcpName": "io.github.84emllc/mcp-toggl",
   "bin": {
     "mcp-toggl": "dist/index.js"
   },
@@ -32,11 +32,11 @@
   "license": "GPL-3.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/verygoodplugins/mcp-toggl.git"
+    "url": "git+https://github.com/84emllc/mcp-toggl.git"
   },
-  "homepage": "https://github.com/verygoodplugins/mcp-toggl#readme",
+  "homepage": "https://github.com/84emllc/mcp-toggl#readme",
   "bugs": {
-    "url": "https://github.com/verygoodplugins/mcp-toggl/issues"
+    "url": "https://github.com/84emllc/mcp-toggl/issues"
   },
   "engines": {
     "node": ">=18"

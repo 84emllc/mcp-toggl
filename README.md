@@ -1,15 +1,17 @@
 # MCP Toggl Server
 
-A Model Context Protocol (MCP) server for Toggl Track integration, providing time tracking and reporting capabilities with intelligent caching for optimal performance.
+A Model Context Protocol (MCP) server for Toggl Track integration, providing time tracking, reporting, and project/client management with intelligent caching for optimal performance.
+
+Forked from [verygoodplugins/mcp-toggl](https://github.com/verygoodplugins/mcp-toggl).
 
 ## Features
 
-- **Time Tracking**: Start/stop timers, get current and past time entries
-- **Smart Reporting**: Daily/weekly reports with project and workspace breakdowns  
+- **Time Tracking**: Start/stop timers, create/update/delete time entries
+- **Project & Client Management**: Create projects, clients, update and archive
+- **Smart Reporting**: Daily/weekly reports with project and workspace breakdowns
 - **Performance Optimized**: Intelligent caching system minimizes API calls
 - **Data Hydration**: Automatically enriches time entries with project/workspace/client names
 - **Flexible Filtering**: Query by date ranges, workspaces, or projects
-- **Automation Ready**: Structured JSON output perfect for Automation Hub workflows
 
 ## Quick Start (Recommended)
 
@@ -121,11 +123,12 @@ Edit `.mcp.json` in your project:
 Get time entries with optional filters.
 ```json
 {
-  "period": "today",  // or: yesterday, week, lastWeek, month, lastMonth
+  "period": "today",
   "workspace_id": 123456,
   "project_id": 789012
 }
 ```
+Supported periods: `today`, `yesterday`, `week`, `lastWeek`, `month`, `lastMonth`
 
 #### `toggl_get_current_entry`
 Get the currently running timer.
@@ -134,14 +137,45 @@ Get the currently running timer.
 Start a new time entry.
 ```json
 {
-  "description": "Working on MCP server",
+  "description": "Working on feature",
   "project_id": 123456,
-  "tags": ["development", "mcp"]
+  "tags": ["development"]
+}
+```
+
+#### `toggl_create_entry`
+Create a completed time entry with specific start and stop times.
+```json
+{
+  "description": "Client meeting",
+  "start": "2026-02-17T09:00:00-06:00",
+  "stop": "2026-02-17T10:00:00-06:00",
+  "project_id": 123456,
+  "billable": true
 }
 ```
 
 #### `toggl_stop_timer`
 Stop the currently running timer.
+
+#### `toggl_update_time_entry`
+Update an existing time entry (change project, description, tags, times).
+```json
+{
+  "time_entry_id": 3456789012,
+  "project_id": 654321,
+  "description": "Updated description",
+  "tags": ["corrected"]
+}
+```
+
+#### `toggl_delete_time_entry`
+Delete a time entry.
+```json
+{
+  "time_entry_id": 3456789012
+}
+```
 
 ### Reporting
 
@@ -149,16 +183,17 @@ Stop the currently running timer.
 Generate a daily report with project/workspace breakdowns.
 ```json
 {
-  "date": "2024-09-01",
-  "format": "json"  // or "text" for formatted output
+  "date": "2026-02-17",
+  "format": "json"
 }
 ```
+Formats: `json` (default), `text` (formatted for display)
 
 #### `toggl_weekly_report`
 Generate a weekly report with daily breakdowns.
 ```json
 {
-  "week_offset": 0,  // 0 = this week, -1 = last week
+  "week_offset": 0,
   "format": "json"
 }
 ```
@@ -191,6 +226,35 @@ List projects in a workspace.
 #### `toggl_list_clients`
 List clients in a workspace.
 
+#### `toggl_create_client`
+Create a new client in a workspace.
+```json
+{
+  "name": "Acme Corp",
+  "notes": "Retainer client"
+}
+```
+
+#### `toggl_create_project`
+Create a new project in a workspace.
+```json
+{
+  "name": "Website Redesign (retainer)",
+  "client_id": 12345678,
+  "billable": true
+}
+```
+
+#### `toggl_update_project`
+Update an existing project (rename, change client, archive).
+```json
+{
+  "project_id": 87654321,
+  "name": "New Project Name",
+  "active": false
+}
+```
+
 ### Cache Management
 
 #### `toggl_warm_cache`
@@ -209,59 +273,13 @@ The server uses an intelligent caching system to minimize API calls:
 1. **First Run**: Warms cache by fetching workspaces, projects, and clients
 2. **Subsequent Calls**: Uses cached names for hydration (95%+ cache hit rate)
 3. **Smart Invalidation**: TTL-based expiry with configurable duration
-4. **Memory Efficient**: LRU eviction keeps memory usage under 10MB
+4. **Write-Through**: Cache is automatically invalidated on create/update operations
+5. **Memory Efficient**: LRU eviction keeps memory usage under 10MB
 
 ### Typical Performance
 - First report: 2-3 API calls (warm cache + get entries)
 - Subsequent reports: 1 API call (just time entries)
 - Cache hit rate: >95% for typical usage
-
-## Usage Examples
-
-### Daily Standup Report
-```javascript
-// Get today's time entries with full details
-toggl_daily_report({ "format": "text" })
-```
-
-### Weekly Summary for Automation Hub
-```javascript
-// Get last week's data as JSON
-toggl_weekly_report({ "week_offset": -1 })
-```
-
-### Project Hours Tracking
-```javascript
-// Get this month's hours by project
-toggl_project_summary({ "period": "month" })
-```
-
-## Integration with Automation Hub
-
-The server returns structured JSON perfect for Automation Hub workflows:
-
-```javascript
-// Example daily report output
-{
-  "date": "2024-09-01",
-  "total_hours": 8.5,
-  "by_project": [
-    {
-      "project_name": "MCP Development",
-      "client_name": "Internal",
-      "total_hours": 4.5,
-      "billable_hours": 0
-    }
-  ],
-  "by_workspace": [
-    {
-      "workspace_name": "Very Good Plugins",
-      "total_hours": 8.5,
-      "project_count": 3
-    }
-  ]
-}
-```
 
 ## Troubleshooting
 
@@ -277,7 +295,6 @@ The server returns structured JSON perfect for Automation Hub workflows:
 - Toggl API tokens do not expire automatically. They only change if you manually regenerate them or if Toggl invalidates them during a security event.
 - If you regenerate your token, the old one stops working immediately. Update the `TOGGL_API_KEY` in your Claude/Cursor config and restart the client.
 - Never commit real secrets to version control. Use placeholders like `your_api_key_here` in docs and examples.
-- Claude Desktop stores the env value in `claude_desktop_config.json` on your machine. Treat that file as sensitive and do not share it.
 
 ### Quick Auth Check
 You can verify connectivity by calling the `toggl_check_auth` tool, which pings `/me` and lists your available workspaces without exposing your token.
@@ -307,10 +324,6 @@ npm test
 
 GPL-3.0
 
-## Support
+## Credits
 
-For issues or questions, please open an issue on GitHub.
-
----
-
-Built with 🧡 for the open source community by [Very Good Plugins](https://verygoodplugins.com?utm_source=github)
+Originally created by [Very Good Plugins](https://verygoodplugins.com). This fork is maintained by [84EM](https://84em.com).
